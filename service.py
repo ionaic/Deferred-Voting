@@ -12,14 +12,19 @@ def graph():
 
 @app.route("/form")
 def form():
+    #if request.method == 'POST':
+    #    if all([k in request.form for k in vote_fields]):
+    #        submit_vote(*[request.form[k] for k in vote_fields])
+    #        return send_file('templates/index.html')
+    #else:
     return send_file('templates/form.html')
 
 @app.route("/data", methods=['GET', 'POST'])
 def data():
     if request.method == 'POST':
         if all([k in request.form for k in vote_fields]):
-            #submit_vote(*[str(request.form[k]) for k in vote_fields])
-            submit_vote(request.form['name'], request.form['vote'], request.form['defer'])
+            submit_vote(*[request.form[k] for k in vote_fields])
+            return send_file('templates/index.html')
     else:
         5
     return "this will be the data page"
