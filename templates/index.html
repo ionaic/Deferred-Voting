@@ -42,7 +42,7 @@ function radius(votes){
 	return radiusScale(votes)? radiusScale(votes): defRadius;
 }
 
-d3.json("/data", function(error, graph) {
+d3.json("/{{src}}", function(error, graph) {
   force
       .nodes(graph.nodes)
       .links(graph.links)

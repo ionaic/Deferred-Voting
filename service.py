@@ -1,4 +1,4 @@
-from flask import Flask, send_file, request
+from flask import Flask, send_file, request, render_template
 from deferredvotes import *
 from sampleData import genData
 
@@ -9,7 +9,11 @@ data_fields = ("placeholder")
 
 @app.route("/")
 def graph():
-    return send_file('templates/index.html')
+    return render_template('index.html', src="data")
+
+@app.route("/sample")
+def samplegraph():
+    return render_template('index.html', src="sampledata")
 
 @app.route("/form", methods=['GET', 'POST'])
 def form():
