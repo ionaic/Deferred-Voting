@@ -20,6 +20,7 @@ def form():
 
 @app.route("/data")
 def data():
+    get_json()
     return send_file('graph.json')
 
 if __name__ == "__main__":
