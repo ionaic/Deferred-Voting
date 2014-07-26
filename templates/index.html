@@ -55,10 +55,17 @@ d3.json("/data", function(error, graph) {
 
   node.append("circle")
       .attr("r", radius);
-  node.append("text")
-  	  .attr("dx", 12)
-	  .attr("dy", ".35em")
+
+  var text = node.append("text")
+  	  .attr("dx", 12);
+
+  text.append("tspan")
 	  .text(function(d){ return d.name; });
+
+  text.append("tspan")
+	  .attr("dy", "1em")
+	  .attr("x", 12)
+	  .text(function(d){ return d.votes; });
 });
 
 function tick() {
