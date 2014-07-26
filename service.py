@@ -27,7 +27,7 @@ def data():
             return send_file('templates/index.html')
     else:
         5
-    return "this will be the data page"
+    return send_file('graph.json')
 
 if __name__ == "__main__":
     app.run(debug=True)
