@@ -35,7 +35,7 @@ def get_vote_info():
         if con:
             con.close()
 
-def get_connection_info():
+def get_connection_info(data):
     """ Build a tree and determine the connections """
 
 def quote(s):
