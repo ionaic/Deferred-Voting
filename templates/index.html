@@ -38,6 +38,8 @@ var link = svg.selectAll(".link"),
 var radiusScale = d3.scale.linear(),
 	defRadius = 12;
 
+var color = d3.scale.category10();
+
 function radius(votes){
 	return radiusScale(votes)? radiusScale(votes): defRadius;
 }
@@ -71,7 +73,10 @@ d3.json("/{{src}}", function(error, graph) {
 
   node.append("circle")
 	  .attr("r", function(d){
-		   return radius(d.votes);
+			   return radius(d.votes);
+		   } )
+  	  .attr("fill", function(d){
+			  return color(d.vote);
 		   } );
 
   var text = node.append("text");
