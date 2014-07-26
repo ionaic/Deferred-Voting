@@ -1,5 +1,6 @@
 from flask import Flask, send_file, request
 from deferredvotes import *
+from sampleData import genData
 
 app = Flask(__name__)
 
@@ -22,6 +23,10 @@ def form():
 def data():
     get_json()
     return send_file('graph.json')
+
+@app.route("/sampledata")
+def sampledata():
+    return genData()
 
 if __name__ == "__main__":
     app.run(debug=True)

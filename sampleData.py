@@ -1,20 +1,21 @@
 import random
 import json
 
+names = [
+    "Alice", "Bob", "Charlie",
+    "Dave", "Ellen", "Frank",
+    "Greg", "Hellen", "Irene",
+    "John", "Ken", "Larry",
+    "Mike", "Nancy", "Oscar",
+    "Pat", "Quincy", "Randy",
+    "Sandy", "Tom", "Ulysses",
+    "Vince", "Will", "Xavier",
+    "Yolandi", "Zeke",
+    ]
+
 def genData(num=None, vote_ratio=.5, defer_ratio=.75, pretty=False):
     if num is None:
         num = random.randint(3, 26)
-    names = [
-        "Alice", "Bob", "Charlie",
-        "Dave", "Ellen", "Frank",
-        "Greg", "Hellen", "Irene",
-        "John", "Ken", "Larry",
-        "Mike", "Nancy", "Oscar",
-        "Pat", "Quincy", "Randy",
-        "Sandy", "Tom", "Ulysses",
-        "Vince", "Will", "Xavier",
-        "Yolandi", "Zeke",
-        ]
 
     nodes = [{
                 "x": i * 2,
