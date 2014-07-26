@@ -35,7 +35,12 @@ var svg = d3.select("body").append("svg")
 var link = svg.selectAll(".link"),
     node = svg.selectAll(".node");
 
-var radius = d3.scale.linear();
+var radiusScale = d3.scale.linear(),
+	defRadius = 12;
+
+function radius(votes){
+	return radiusScale(votes)? radiusScale(votes): defRadius;
+}
 
 d3.json("/data", function(error, graph) {
   force
@@ -43,7 +48,7 @@ d3.json("/data", function(error, graph) {
       .links(graph.links)
       .start();
 
-  radius.domain([
+  radiusScale.domain([
 			d3.min(graph.nodes, function(d) {
 				return d.votes;
 				} ),
@@ -85,7 +90,6 @@ function tick() {
   link.attr("x1", function(d) { return d.source.x; })
       .attr("y1", function(d) { return d.source.y; })
 	  .each(function(d) {
-			  	console.log(d.target);
 			  	var dist = Math.sqrt(
 							Math.pow((d.source.x - d.target.x), 2) +
 							Math.pow((d.source.y - d.target.y), 2)
