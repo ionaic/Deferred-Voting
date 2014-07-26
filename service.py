@@ -12,7 +12,7 @@ def form():
 
 @app.route("/data")
 def data():
-    return "this will be the data page"
+    return send_file('graph.json')
 
 if __name__ == "__main__":
     app.run(debug=True)
