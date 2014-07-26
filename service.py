@@ -1,6 +1,10 @@
-from flask import Flask, send_file
+from flask import Flask, send_file, request
+from deferredvotes import *
 
 app = Flask(__name__)
+
+vote_fields = ("name", "vote", "defer")
+data_fields = ("placeholder")
 
 @app.route("/")
 def graph():
@@ -10,8 +14,14 @@ def graph():
 def form():
     return send_file('templates/form.html')
 
-@app.route("/data")
+@app.route("/data", methods=['GET', 'POST'])
 def data():
+    if request.method == 'POST':
+        if all([k in request.form for k in vote_fields]):
+            #submit_vote(*[str(request.form[k]) for k in vote_fields])
+            submit_vote(request.form['name'], request.form['vote'], request.form['defer'])
+    else:
+        5
     return send_file('graph.json')
 
 if __name__ == "__main__":
