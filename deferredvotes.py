@@ -47,11 +47,11 @@ def get_json():
     entries = []
     print(str(data))
 
-    for x in data
+    for x in data:
         entries.append({quote('name'): quote(x[0]), quote('votes'):1})
 
 def dict_to_json(dlist, conlist):
-    return '{"nodes":[' \
+    return '{"nodes":['\
     + ','.join(['{' + ','.join(['%s:%s' % kv for kv in d.iteritems()]) + '}' for d in dlist])\
     + '],links:['\
     + ']}'
