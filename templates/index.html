@@ -6,8 +6,7 @@
 <script>
 
 var width = window.innerWidth,
-    height = window.innerHeight,
-	radius = 12;
+    height = window.innerHeight;
 
 var force = d3.layout.force()
     .size([width, height])
@@ -36,34 +35,62 @@ var svg = d3.select("body").append("svg")
 var link = svg.selectAll(".link"),
     node = svg.selectAll(".node");
 
+var radius = d3.scale.linear();
+
 d3.json("/data", function(error, graph) {
   force
       .nodes(graph.nodes)
       .links(graph.links)
       .start();
 
+  radius.domain([
+			d3.min(graph.nodes, function(d) {
+				return d.votes;
+				} ),
+			d3.max(graph.nodes, function(d) {
+				return d.votes;
+				} )
+		])
+	.range([5, 25]);
+		
   link = link.data(graph.links)
-    .enter().append("line")
-      .attr("class", "link")
-		.attr("marker-end", "url(#Triangle)");
+	  .enter().append("line")
+	  .attr("class", "link")
+	  .attr("marker-end", "url(#Triangle)");
 
   node = node.data(graph.nodes)
-    .enter().append("circle")
+    .enter().append("g")
       .attr("class", "node")
-      .attr("r", radius)
       .on("dblclick", dblclick)
       .call(drag);
+
+  node.append("circle")
+	  .attr("r", function(d){
+		   return radius(d.votes);
+		   } );
+
+  var text = node.append("text");
+
+  text.append("tspan")
+	  .attr("x", function(d){ return radius(d.votes); })
+	  .text(function(d){ return d.name; });
+
+  text.append("tspan")
+	  .attr("dy", "1em")
+	  .attr("x", function(d){ return radius(d.votes); })
+	  .text(function(d){ return d.votes; });
 });
 
 function tick() {
   link.attr("x1", function(d) { return d.source.x; })
       .attr("y1", function(d) { return d.source.y; })
 	  .each(function(d) {
+			  	console.log(d.target);
 			  	var dist = Math.sqrt(
 							Math.pow((d.source.x - d.target.x), 2) +
 							Math.pow((d.source.y - d.target.y), 2)
 						),
-					d2 = dist - radius - 8,
+					d2 = dist - radius(d.target.votes) - 8,
 					ratio = d2 / dist;
 
 				var dx = (d.target.x - d.source.x) * ratio,
@@ -75,8 +102,9 @@ function tick() {
 					});
 			});
 
-  node.attr("cx", function(d) { return d.x; })
-      .attr("cy", function(d) { return d.y; });
+  node.attr("transform", function(d) {
+		  return "translate(" + d.x + "," + d.y + ")";
+	  });
 }
 
 function dblclick(d) {
