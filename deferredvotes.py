@@ -53,7 +53,7 @@ def get_json():
     print(str(data))
     print(str(tree))
 
-    nodes = [{quote('name'): quote(x[0]), quote('votes'):1} for x in data]
+    nodes = [{quote('name'): quote(x[0]), quote('votes'):1, quote('vote'):quote(x[1])} for x in data]
     edges = [{quote('source'): x[0], quote('target'): x[1]} for x in tree.Edges]
     
     return dict_to_json(nodes, edges)
