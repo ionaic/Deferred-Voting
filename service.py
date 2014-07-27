@@ -26,7 +26,6 @@ def form():
 @app.route("/data")
 def data():
     print(str(get_json()))
-    #return send_file('graph.json')
     return get_json()
 
 @app.route("/sampledata")
