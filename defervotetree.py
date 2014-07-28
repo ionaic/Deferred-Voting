@@ -15,17 +15,22 @@ class DeferTree:
         """ Should be a directed cyclic graph of connections """
         self.Nodes = []
         self.Edges = []
+        self.TreeList = []
+        self.TreeVoters = []
         if data:
             self.multiAddNode(data)
 
     def __str__(self):
-        return str((self.Nodes, self.Edges))
+        return str((self.Nodes, self.Edges, self.TreeList, self.TreeVoters))
     def __repr__(self):
         return self.__str__()
     
     def addNode(self, name, vote, defer):
         self.Nodes.append(DeferNode(name, vote, defer))
-        #TODO ignores connections to objects not found in list, should add a filler node for write-in candidates
+        #TODO ignores connections to objects not found in list, should add a
+        # filler node for write-in candidates
+        #
+        # is this an undesirable behavior?
         if self.getNodeIdx(defer):
             self.Edges.append((self.getNodeIdx(name), self.getNodeIdx(defer)))
 
@@ -49,22 +54,52 @@ class DeferTree:
 
     def identifyTrees(self):
         """ Find the seperate voting entities in the tree """
-        cur_tree_idx = 0
-        # every edge where the idx is the destination
-        neighbors = [filter(lambda e: idx in e, self.Edges) for idx in range(len(self.Nodes))]
-        tree_idx_filter = [1] * len(self.Nodes)
-        [[lst for idx,lst in neighbors if idx in nbhd] for nbhd in neighbors]
+        self.Edges += [(idx, idx) for idx in range(len(self.Nodes))]
+
+        neighbors = [[tup[0] if tup[0] != idx else tup[1] for tup in filter(lambda e: idx in e, self.Edges)] for idx in range(len(self.Nodes))]
         tree_list = [[]]
+        cur_tree_idx = 0
         for nbhd in neighbors:
             for idx in nbhd:
                 tree_list[cur_tree_idx] += neighbors[idx]
-                
-        #tree_list = [[]]
-        #for nbhd in neighbors:
-        #    tree_list[cur_tree_idx] +=
-        #[[neighbors[idx] for idx in nbrhd] for nbrhd in neighbors]
-        #[ [  for nbr in neighbors] for tree_idx in len(self.Nodes)]
+            cur_tree_idx += 1
+            tree_list.append([])
+
+        self.TreeList = list(set([tuple(sorted(set(lst))) for lst in tree_list if lst != []]))
+        self.markUsersWithTrees()
+
+        return self.TreeList
+
+    def markUsersWithTrees(self):
+        for tree_idx,tree in enumerate(self.TreeList):
+            for node_idx in tree:
+                self.Nodes[node_idx].treeID = tree_idx
 
     def findRoots(self):
         """ Calculate the roots of the tree, requires detection of cycles the
         tree root may be a single node or a cycle of nodes """
+        self.identifyTrees()
+        self.TreeVoters = []
+        # loopback edges ignored
+        target_nodes = zip(*filter(lambda x: not x[0] == x[1], self.Edges))[1]
+        for tree in self.TreeList:
+            # pick a leaf to start at (doesn't matter which)
+            leaves = filter(lambda x: x not in target_nodes, tree)
+            if len(leaves) > 0:
+                cur_idx = leaves[0]
+                traverse_list = []
+                # traverse upwards pushing into a list
+                # if you encounter a node that's in the list already...
+                while cur_idx >= 0 and cur_idx not in traverse_list:
+                    traverse_list.append(cur_idx)
+                    print("%s GetIDX for " % cur_idx + self.Nodes[cur_idx].defer)
+                    cur_idx = self.getNodeIdx(self.Nodes[cur_idx].defer)
+                # then everything in the list in between that element and the
+                # current element is the loop
+                self.TreeVoters.append(traverse_list[cur_idx:])
+
+            # if no leaves then everything's in the "head" connected component
+            else:
+                self.TreeVoters.append(tree)
+
+        return self.TreeVoters
