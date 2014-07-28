@@ -1,11 +1,16 @@
+from __future__ import division
+
 class DeferNode:
     def __init__(self, name, vote, defer):
-        self.name = name
-        self.vote = vote
+        self.name = name # voter name
+        self.vote = vote # actual content of your vote
+        self.vote_count = 1 # number of votes
         self.defer = defer # essentially the next node
+        self.deferral_count = 0 # how many people defer to you
         self.treeID = -1
     def __str__(self):
-        return str((self.name, self.vote, self.defer, self.treeID))
+        return str((self.name, self.vote, self.vote_count, self.defer, self.deferral_count, self.treeID))
+        #return str({"name":self.name, "vote":self.vote, "vote count":self.vote_count, "defer":self.defer, "deferral_count":self.deferral_count, "tree":self.treeID})
 
     def __repr__(self):
         return self.__str__()
@@ -75,6 +80,16 @@ class DeferTree:
             for node_idx in tree:
                 self.Nodes[node_idx].treeID = tree_idx
 
+    def getSubtreeLeaves(self, treeIdx=-1, tree=None):
+        return filter(lambda x: x not in target_nodes, \
+                self.TreeList[treeIdx] if treeIdx >= 0 else tree)
+
+    def getSourceNodes(self):
+        return zip(*filter(lambda x: not x[0] == x[1], self.Edges))[0]
+
+    def getTargetNodes(self):
+        return zip(*filter(lambda x: not x[0] == x[1], self.Edges))[1]
+
     def findRoots(self):
         """ Calculate the roots of the tree, requires detection of cycles the
         tree root may be a single node or a cycle of nodes """
@@ -92,7 +107,6 @@ class DeferTree:
                 # if you encounter a node that's in the list already...
                 while cur_idx >= 0 and cur_idx not in traverse_list:
                     traverse_list.append(cur_idx)
-                    print("%s GetIDX for " % cur_idx + self.Nodes[cur_idx].defer)
                     cur_idx = self.getNodeIdx(self.Nodes[cur_idx].defer)
                 # then everything in the list in between that element and the
                 # current element is the loop
@@ -103,3 +117,19 @@ class DeferTree:
                 self.TreeVoters.append(tree)
 
         return self.TreeVoters
+    
+    def countDeferrals(self):
+        """ Count up the deferrals and pass along votes once the tree is built
+            fully """
+        for idx,tree in enumerate(self.TreeList):
+            # counts the votes for the voting body
+            votes = len(tree)/len(self.TreeVoters[idx])
+            for voter_idx in self.TreeVoters[idx]:
+                self.Nodes[voter_idx].vote_count = votes
+            
+            # the other nodes will be the number of occurences they have in the target
+            target_nodes = self.getTargetNodes()
+            for node_idx in tree:
+                if node_idx not in self.TreeVoters[idx]:
+                    self.Nodes[node_idx].deferral_count = len(filter(lambda x: node_idx == x, target_nodes))
+                    self.Nodes[node_idx].vote_count = 0

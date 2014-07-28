@@ -41,7 +41,11 @@ def get_connection_info(data):
         -Check Database for existing tree, if no tree, generate off data
         -if tree found then retrieve tree and rebuild python DS from database
         entries """
-    return DeferTree(data=data)
+    tree = DeferTree(data=data)
+    tree.identifyTrees()
+    tree.findRoots()
+    tree.countDeferrals()
+    return tree
 
 def quote(s):
     return '"%s"' % s
@@ -51,8 +55,8 @@ def get_json():
     tree = get_connection_info(data)
     nodes = []
 
-    nodes = [{quote('name'): quote(x[0]), quote('votes'):1, quote('vote'):quote(x[1])} for x in data]
-    edges = [{quote('source'): x[0], quote('target'): x[1]} for x in tree.Edges]
+    nodes = [{quote('name'): quote(node.name), quote('votes'):node.vote_count, quote('vote'):quote(node.vote)} for node in tree.Nodes]
+    edges = [{quote('source'): edge[0], quote('target'): edge[1]} for edge in tree.Edges]
     
     return dict_to_json(nodes, edges)
 
