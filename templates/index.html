@@ -100,7 +100,15 @@ function tick() {
 							Math.pow((d.source.y - d.target.y), 2)
 						),
 					d2 = dist - radius(d.target.votes) - 8,
-					ratio = d2 / dist;
+					ratio;
+				if(dist == 0){
+					d3.select(this).attr({
+							"x2": d.source.x,
+							"y2": d.source.y
+						});
+					return
+				}
+				ratio = d2 / dist;
 
 				var dx = (d.target.x - d.source.x) * ratio,
 					dy = (d.target.y - d.source.y) * ratio;
