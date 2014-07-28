@@ -19,7 +19,7 @@ class DeferTree:
             self.multiAddNode(data)
 
     def __str__(self):
-        return str(zip(self.Nodes, self.Edges))
+        return str((self.Nodes, self.Edges))
     def __repr__(self):
         return self.__str__()
     
@@ -36,7 +36,6 @@ class DeferTree:
 
     def getNodeIdx(self, nodeName):
         lst = filter(lambda n: n[1].name == nodeName, enumerate(self.Nodes))
-        print "getNodeIdx %s" % str(lst)
         return lst[0][0] if len(lst) > 0 else -1
     
     def storeTreeInDB(self):
@@ -55,6 +54,11 @@ class DeferTree:
         neighbors = [filter(lambda e: idx in e, self.Edges) for idx in range(len(self.Nodes))]
         tree_idx_filter = [1] * len(self.Nodes)
         [[lst for idx,lst in neighbors if idx in nbhd] for nbhd in neighbors]
+        tree_list = [[]]
+        for nbhd in neighbors:
+            for idx in nbhd:
+                tree_list[cur_tree_idx] += neighbors[idx]
+                
         #tree_list = [[]]
         #for nbhd in neighbors:
         #    tree_list[cur_tree_idx] +=

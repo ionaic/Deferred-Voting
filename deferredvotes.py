@@ -50,8 +50,6 @@ def get_json():
     data = get_vote_info()
     tree = get_connection_info(data)
     nodes = []
-    print(str(data))
-    print(str(tree))
 
     nodes = [{quote('name'): quote(x[0]), quote('votes'):1, quote('vote'):quote(x[1])} for x in data]
     edges = [{quote('source'): x[0], quote('target'): x[1]} for x in tree.Edges]
