@@ -1,4 +1,5 @@
 from __future__ import division
+from collections import deque
 
 class DeferNode:
     def __init__(self, name, vote, defer):
@@ -6,7 +7,7 @@ class DeferNode:
         self.vote = vote # actual content of your vote
         self.vote_count = 1 # number of votes
         self.defer = defer # essentially the next node
-        self.deferral_count = 0 # how many people defer to you
+        self.deferral_count = 1 # how many people defer to you
         self.treeID = -1
     def __str__(self):
         return str((self.name, self.vote, self.vote_count, self.defer, self.deferral_count, self.treeID))
@@ -59,9 +60,9 @@ class DeferTree:
 
     def identifyTrees(self):
         """ Find the seperate voting entities in the tree """
-        self.Edges += [(idx, idx) for idx in range(len(self.Nodes))]
+        mod_edges = self.Edges + [(idx, idx) for idx in range(len(self.Nodes))]
 
-        neighbors = [[tup[0] if tup[0] != idx else tup[1] for tup in filter(lambda e: idx in e, self.Edges)] for idx in range(len(self.Nodes))]
+        neighbors = [[tup[0] if tup[0] != idx else tup[1] for tup in filter(lambda e: idx in e, mod_edges)] for idx in range(len(self.Nodes))]
         tree_list = [[]]
         cur_tree_idx = 0
         for nbhd in neighbors:
@@ -80,8 +81,8 @@ class DeferTree:
             for node_idx in tree:
                 self.Nodes[node_idx].treeID = tree_idx
 
-    def getSubtreeLeaves(self, treeIdx=-1, tree=None):
-        return filter(lambda x: x not in target_nodes, \
+    def getSubtreeLeaves(self, treeIdx=-1, tree=[]):
+        return filter(lambda x: x not in self.getTargetNodes(), \
                 self.TreeList[treeIdx] if treeIdx >= 0 else tree)
 
     def getSourceNodes(self):
@@ -96,10 +97,11 @@ class DeferTree:
         self.identifyTrees()
         self.TreeVoters = []
         # loopback edges ignored
-        target_nodes = zip(*filter(lambda x: not x[0] == x[1], self.Edges))[1]
+        target_nodes = self.getTargetNodes()
         for tree in self.TreeList:
             # pick a leaf to start at (doesn't matter which)
-            leaves = filter(lambda x: x not in target_nodes, tree)
+            #leaves = filter(lambda x: x not in target_nodes, tree)
+            leaves = self.getSubtreeLeaves(tree=tree)
             if len(leaves) > 0:
                 cur_idx = leaves[0]
                 traverse_list = []
@@ -121,15 +123,29 @@ class DeferTree:
     def countDeferrals(self):
         """ Count up the deferrals and pass along votes once the tree is built
             fully """
+        # clear the existing data in the nodes
+        for node in self.Nodes:
+            node.vote_count = 1
+            node.deferral_count = 1
+
         for idx,tree in enumerate(self.TreeList):
-            # counts the votes for the voting body
+            # counts the actual votes
             votes = len(tree)/len(self.TreeVoters[idx])
-            for voter_idx in self.TreeVoters[idx]:
-                self.Nodes[voter_idx].vote_count = votes
+            for voter_idx in tree:
+                self.Nodes[voter_idx].vote_count = \
+                   votes if voter_idx in self.TreeVoters[idx] else 0
             
-            # the other nodes will be the number of occurences they have in the target
-            target_nodes = self.getTargetNodes()
-            for node_idx in tree:
-                if node_idx not in self.TreeVoters[idx]:
-                    self.Nodes[node_idx].deferral_count = len(filter(lambda x: node_idx == x, target_nodes))
-                    self.Nodes[node_idx].vote_count = 0
+            # propagate the deferrals
+            traversal_queue = deque(self.getSubtreeLeaves(treeIdx=idx))
+            while len(traversal_queue) > 0:
+                print(str(traversal_queue))
+                cur_node_idx = traversal_queue.popleft()
+                # get the next node in BFS
+                nxt_idx = self.getNodeIdx(self.Nodes[cur_node_idx].defer)
+
+                # if the next node is in the tree and not a voter, add for traversal
+                if nxt_idx >= 0:
+                    if nxt_idx not in self.TreeVoters[idx] and nxt_idx not in traversal_queue:
+                        traversal_queue.append(nxt_idx)
+                    # increase the next node's number of defers by cur node's number of defers
+                    self.Nodes[nxt_idx].deferral_count += self.Nodes[cur_node_idx].deferral_count

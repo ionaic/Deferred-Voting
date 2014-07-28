@@ -49,8 +49,9 @@ def testGetCycles(self):
 
     return self.TreeVoters
 
-print("\ntreevoters " + str(data_tree.findRoots()))
-print("\ntree " + str(data_tree))
-print(str(data_tree.Nodes[11]))
-data_tree.countDeferrals()
+#print("\ntreevoters " + str(data_tree.findRoots()))
+#print("\ntree " + str(data_tree.TreeList))
+#print(str(data_tree.Nodes[11]))
 print(str(data_tree.Nodes))
+print(str(data_tree.TreeList))
+print(str(data_tree.TreeVoters))

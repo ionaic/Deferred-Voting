@@ -55,7 +55,7 @@ def get_json():
     tree = get_connection_info(data)
     nodes = []
 
-    nodes = [{quote('name'): quote(node.name), quote('votes'):node.vote_count, quote('vote'):quote(node.vote)} for node in tree.Nodes]
+    nodes = [{quote('name'): quote(node.name), quote('votes'):node.deferral_count, quote('vote'):quote(node.vote)} for node in tree.Nodes]
     edges = [{quote('source'): edge[0], quote('target'): edge[1]} for edge in tree.Edges]
     
     return dict_to_json(nodes, edges)
