@@ -2,17 +2,52 @@ from __future__ import print_function
 import sqlite3 as sql
 from defervotetree import DeferTree
 
-def submit_vote(name, vote, defer):
+database = None
+
+def set_database(val):
+    global database;
+    database = val
+
+def get_user_id(first, last):
     con = None
     try:
-        con = sql.connect('test.db')
+        con = sql.connect(database)
         
         cur = con.cursor()
-        cur.execute('INSERT INTO Votes VALUES (?,?,?)', sanitize_inputs(name, vote, defer))
-        con.commit()
+        cur.execute('SELECT V.ID FROM VOTERS V WHERE V.FIRST == ? AND V.LAST == ?', sanitize_inputs(first, last))
+        ans = cur.fetchall()
+        if len(ans) != 1:
+            return None
+        else:
+            return ans[0][0]
 
     except sql.Error as e:
         print("Error: %s" % e.args[0])
+        return
+
+    finally:
+        if con:
+            con.close()
+
+# will transform an issue hash into an id
+def id_from_hash(issue_hash):
+	return issue_hash
+
+
+def submit_vote(vote_id, defer_id, issue_id, vote):
+    con = None
+    try:
+        con = sql.connect(database)
+        
+        cur = con.cursor()
+        print(vote_id, defer_id, issue_id, vote)
+        cur.execute('INSERT INTO VOTES (VOTER, DEFER, IID, VOTE) VALUES (?,?,?,?)',
+                sanitize_inputs(vote_id, defer_id, issue_id, vote))
+        con.commit()
+        return True
+
+    except sql.Error as e:
+        print("submit_vote Error: %s" % e.args[0])
         return
     
     finally:
@@ -21,7 +56,7 @@ def submit_vote(name, vote, defer):
 
 def get_vote_info():
     try:
-        con = sql.connect('test.db')
+        con = sql.connect(database)
 
         cur = con.cursor()
         cur.execute('SELECT Name, Vote, Defer FROM Votes')
@@ -65,5 +100,5 @@ def dict_to_json(nodes, edges):
     + ','.join(['{' + ','.join(['%s:%s' % kv for kv in d.iteritems()]) + '}' for d in edges])\
     + ']}'
 
-def sanitize_inputs(name, vote, defer):
-    return (name, vote, defer)
+def sanitize_inputs(*argv):
+    return argv
