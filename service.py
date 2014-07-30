@@ -41,6 +41,10 @@ def form(issue_hash):
 				return redirect(url_for("graph"))
     return send_file('templates/form.html')
 
+@app.route("/newballot")
+def newballot():
+    return send_file('templates/ballot.html')
+
 @app.route("/data")
 def data():
     print(str(get_json()))

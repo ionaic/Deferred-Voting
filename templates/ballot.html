@@ -1,0 +1,65 @@
+<script>
+var issueCount = 1,
+	issueLimit = 5,
+	optCount = 1,
+	optLimit = 10;
+
+function addNewIssue(id){
+	if (issueCount >= issueLimit){
+		alert("Max number of issues reached");
+		return;
+	}
+	issueCount++;
+	var newIssue = document.createElement("div");
+	newIssue.innerHTML =
+			"<h2>Issue " + issueCount + ":</h2>" + 
+			"<label>Title:</label><input type=text/><br/>" + 
+			"<label>Description:</label><input type=text/><br/>" + 
+			"<label>Options:</label>" + 
+			"<ul>" + 
+				"<li><input type=text onfocus='addNextOpt(this)'/></li>" +
+			"</ul>";
+
+	var elt = document.getElementById(id);
+	elt.appendChild(newIssue);
+
+}
+
+function addNextOpt(elt){
+	elt.setAttribute("onfocus", "");
+
+	if (optCount >= optLimit){
+		return;
+	}
+
+	var listelt = document.createElement("li"),
+		input = document.createElement("input");
+
+	input.setAttribute("onfocus", "addNextOpt(this)");
+	input.setAttribute("type", "text");
+		
+	listelt.appendChild(input);
+
+	elt.parentElement
+		.parentElement
+		.appendChild(listelt);
+
+	optCount++;
+}
+
+
+</script>
+<form method="POST">
+	<div id="expanding-form">
+		<div>
+			<h2>Issue 1:</h2>
+			<label>Title:</label><input type=text/><br/>
+			<label>Description:</label><input type=text/><br/>
+			<label>Options:</label>
+			<ul>
+				<li><input type=text onfocus="addNextOpt(this)"/></li>
+			</ul>
+		</div>
+	</div>
+	<input type=button value="New Form" onclick="addNewIssue('expanding-form')"/>
+</form>
